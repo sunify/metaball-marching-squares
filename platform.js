@@ -1,10 +1,15 @@
 const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext('2d');
 
+let stopped = false;
+window.addEventListener('click', () => {
+  stopped = !stopped;
+});
+
 let prevT = 0;
 function runDraw(t) {
   requestAnimationFrame(runDraw);
-  if (t - prevT < 1000 / 30) return;
+  if (t - prevT < 1000 / 30 || stopped) return;
 
   if (typeof draw === 'function') {
     draw();
