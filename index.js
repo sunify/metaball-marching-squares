@@ -16,24 +16,24 @@ const corners = [[0, 0], [1, 0], [1, 1], [0, 1]];
 const circles = [
   {
     radius: 30,
-    x: 50,
+    x: 100,
     y: 100,
-    vx: random(-10, 10),
-    vy: random(-10, 10)
+    vx: random(-2, 2),
+    vy: random(-2, 2)
   },
   {
     radius: 20,
     x: 120,
     y: 100,
-    vx: random(-10, 10),
-    vy: random(-10, 10)
+    vx: random(-2, 2),
+    vy: random(-2, 2)
   },
   {
     radius: 30,
     x: 120,
     y: 100,
-    vx: random(-10, 10),
-    vy: random(-10, 10)
+    vx: random(-2, 2),
+    vy: random(-2, 2)
   }
 ];
 
@@ -42,13 +42,14 @@ canvas.height = height;
 
 function draw() {
   ctx.fillStyle = '#000';
-  ctx.fillRect(0, 0, width, height);
+  canvas.width = width;
+  // ctx.fillRect(0, 0, width, height);
 
   updateCircles();
 
   // drawGrid();
-  drawCircles();
   drawMetaballs();
+  // drawCircles();
 }
 
 function drawWeights(i, j, weights) {
@@ -73,7 +74,7 @@ function drawCircles() {
 }
 
 function drawMetaballs() {
-  ctx.fillStyle = '#373';
+  ctx.fillStyle = '#000';
   for (let i = 0; i < cols; i += 1) {
     for (let j = 0; j < rows; j += 1) {
       const cornerWeights = corners.map(([cx, cy]) =>
@@ -91,22 +92,29 @@ function drawMetaballs() {
 function drawLines(i, j, lines) {
   ctx.strokeStyle = '#0f0';
   lines.forEach(line => {
-    const x1 = (i + line[0]) * gridSize;
-    const y1 = (j + line[1]) * gridSize;
-    const x2 = (i + line[2]) * gridSize;
-    const y2 = (j + line[3]) * gridSize;
     ctx.beginPath();
-    ctx.moveTo(x1, y1);
-    ctx.lineTo(x2, y2);
-    ctx.stroke();
+    ctx.moveTo((i + line[0]) * gridSize, (j + line[1]) * gridSize);
+    for (let l = 2; l < line.length; l += 2) {
+      ctx.lineTo(
+        (i + line[l]) * gridSize,
+        (j + line[l + 1]) * gridSize
+      );
+    }
+    ctx.fill();
   });
 }
 
 function interpolateLines(lines, cornerWeights) {
+  // return lines;
   return lines.map(line => {
     for (let i = 0; i < line.length; i += 2) {
       const x = line[i];
       const y = line[i + 1];
+
+      if ((x === 0 || x === 1) && (y === 0 || y === 1)) {
+        // it's corner
+        continue;
+      }
 
       if (x === 0 || x === 1) {
         line[i + 1] = lerp(
@@ -114,7 +122,9 @@ function interpolateLines(lines, cornerWeights) {
             ? [cornerWeights[0], cornerWeights[3]]
             : [cornerWeights[1], cornerWeights[2]])
         );
-      } else if (y === 0 || y === 1) {
+      }
+
+      if (y === 0 || y === 1) {
         line[i] = lerp(
           ...(y === 0
             ? [cornerWeights[0], cornerWeights[1]]
@@ -144,19 +154,20 @@ function calcCirclesWeight(x, y) {
 }
 
 function updateCircles() {
+  const threshold = 30;
   circles.forEach(circle => {
     circle.x += circle.vx;
     circle.y += circle.vy;
     if (
-      circle.x + circle.radius > width ||
-      circle.x - circle.radius < 0
+      circle.x + circle.radius + threshold > width ||
+      circle.x - circle.radius - threshold < 0
     ) {
       circle.vx *= -1;
     }
 
     if (
-      circle.y + circle.radius > height ||
-      circle.y - circle.radius < 0
+      circle.y + circle.radius + threshold > height ||
+      circle.y - circle.radius - threshold < 0
     ) {
       circle.vy *= -1;
     }
@@ -177,33 +188,35 @@ function getSquareLines(weights) {
   const corners = cornersSign(weights.map(n => (n >= 1 ? 1 : 0)));
   switch (corners) { // easier to read corners configuration
     case '0001':
-      return [[0, 0.5, 0.5, 1]];
+      return [[0, 0.5, 0.5, 1, 0, 1]];
     case '0010':
-      return [[1, 0.5, 0.5, 1]];
+      return [[1, 0.5, 0.5, 1, 1, 1]];
     case '0011':
-      return [[0, 0.5, 1, 0.5]];
+      return [[0, 0.5, 1, 0.5, 1, 1, 0, 1]];
     case '0100':
-      return [[0.5, 0, 1, 0.5]];
+      return [[0.5, 0, 1, 0.5, 1, 0]];
     case '0101':
-      return [[0, 0.5, 0.5, 0], [0.5, 1, 1, 0.5]];
+      return [[0, 0.5, 0.5, 0, 1, 0, 1, 0.5, 0.5, 1, 0, 1]];
     case '0110':
-      return [[0.5, 0, 0.5, 1]];
+      return [[0.5, 0, 0.5, 1, 1, 1, 1, 0]];
     case '0111':
-      return [[0, 0.5, 0.5, 0]];
+      return [[0, 0.5, 0.5, 0, 1, 0, 1, 1, 0, 1]];
     case '1000':
-      return [[0, 0.5, 0.5, 0]];
+      return [[0, 0.5, 0.5, 0, 0, 0]];
     case '1001':
-      return [[0.5, 0, 0.5, 1]];
+      return [[0.5, 0, 0.5, 1, 0, 1, 0, 0]];
     case '1010':
-      return [[0, 0.5, 0.5, 1], [0.5, 0, 1, 0.5]];
+      return [[0, 0.5, 0.5, 1, 1, 1, 1, 0.5, 0.5, 0, 0, 0]];
     case '1011':
-      return [[0.5, 0, 1, 0.5]];
+      return [[0.5, 0, 1, 0.5, 1, 1, 0, 1, 0, 0]];
     case '1100':
-      return [[0, 0.5, 1, 0.5]];
+      return [[0, 0.5, 1, 0.5, 1, 0, 0, 0]];
     case '1101':
-      return [[0.5, 1, 1, 0.5]];
+      return [[0.5, 1, 1, 0.5, 1, 0, 0, 0, 0, 1]];
     case '1110':
-      return [[0, 0.5, 0.5, 1]];
+      return [[0, 0.5, 0.5, 1, 1, 1, 1, 0, 0, 0]];
+    case '1111':
+      return [[0, 0, 1, 0, 1, 1, 0, 1]];
   }
 }
 
