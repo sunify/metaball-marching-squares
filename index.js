@@ -1,6 +1,6 @@
 const width = window.innerWidth;
 const height = window.innerHeight;
-const gridSize = 10;
+const gridSize = 15;
 const cols = Math.floor(width / gridSize);
 const rows = Math.floor(height / gridSize);
 
@@ -20,7 +20,7 @@ const corners = [[0, 0], [1, 0], [1, 1], [0, 1]];
 
 const circles = [
   {
-    radius: 30,
+    radius: 50,
     x: width / 2,
     y: height / 2,
     vx: random(-2, 2),
@@ -34,14 +34,14 @@ const circles = [
     vy: random(-2, 5)
   },
   {
-    radius: 35,
+    radius: 75,
     x: width / 2,
     y: height / 2,
     vx: random(-5, 10),
     vy: random(-12, 5)
   },
   {
-    radius: 30,
+    radius: 60,
     x: width / 2,
     y: height / 2,
     vx: random(-2, 2),
@@ -60,12 +60,8 @@ function draw() {
   ctx.fillStyle = '#000';
   canvas.width = width;
   ballsCanvas.width = width;
-  // ctx.fillRect(0, 0, width, height);
 
   updateCircles();
-
-  // drawGrid();
-
   drawMetaballs();
 
   ctx.fillStyle = gradient;
@@ -196,7 +192,11 @@ function drawGrid() {
 
 function calcCirclesWeight(x, y) {
   return circles.reduce((sum, circle) => {
-    return sum + circle.radius / dist(circle.x, circle.y, x, y);
+    return (
+      sum +
+      Math.pow(circle.radius, 2) /
+        (Math.pow(circle.x - x, 2) + Math.pow(circle.y - y, 2))
+    );
   }, 0);
 }
 
