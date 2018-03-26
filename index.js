@@ -21,24 +21,24 @@ const corners = [[0, 0], [1, 0], [1, 1], [0, 1]];
 const circles = [
   {
     radius: 50,
-    x: width / 2,
-    y: height / 2,
+    x: width / 2 + 30,
+    y: height / 2 - 30,
     vx: random(-2, 2),
     vy: random(-2, 2)
   },
   {
     radius: 40,
-    x: width / 2,
-    y: height / 2,
+    x: width / 2 + 100,
+    y: height / 2 - 30,
     vx: random(-5, 2),
     vy: random(-2, 5)
   },
   {
     radius: 75,
-    x: width / 2,
-    y: height / 2,
-    vx: random(-5, 10),
-    vy: random(-12, 5)
+    x: width / 2 + 40,
+    y: height / 2 + 40,
+    vx: random(-5, 2),
+    vy: random(-2, 5)
   },
   {
     radius: 60,
@@ -203,21 +203,28 @@ function calcCirclesWeight(x, y) {
 function updateCircles() {
   const padding = 100;
   circles.forEach(circle => {
-    circle.x += circle.vx;
-    circle.y += circle.vy;
-    if (
-      circle.x + circle.radius + padding > width ||
-      circle.x - circle.radius - padding < 0
-    ) {
-      circle.vx *= -1;
-    }
+    const t = Date.now() / 1000;
+    circle.ox = circle.ox || circle.x;
+    circle.oy = circle.oy || circle.y;
+    circle.x =
+      circle.ox + Math.cos(t) * circle.radius * circle.vx * 0.3;
+    circle.y =
+      circle.oy +
+      Math.sin(t) * circle.radius * circle.vy +
+      Math.cos(t) * 20;
+    // if (
+    //   circle.x + circle.radius + padding > width ||
+    //   circle.x - circle.radius - padding < 0
+    // ) {
+    //   circle.vx *= -1;
+    // }
 
-    if (
-      circle.y + circle.radius + padding > height ||
-      circle.y - circle.radius - padding < 0
-    ) {
-      circle.vy *= -1;
-    }
+    // if (
+    //   circle.y + circle.radius + padding > height ||
+    //   circle.y - circle.radius - padding < 0
+    // ) {
+    //   circle.vy *= -1;
+    // }
   });
 }
 
