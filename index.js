@@ -1,6 +1,6 @@
 const width = window.innerWidth;
 const height = window.innerHeight;
-const gridSize = 15;
+const gridSize = 10;
 const cols = Math.floor(width / gridSize);
 const rows = Math.floor(height / gridSize);
 
@@ -67,36 +67,70 @@ function draw() {
   // drawGrid();
 
   drawMetaballs();
-  // drawCircles();
 
   ctx.fillStyle = gradient;
   ctx.drawImage(ballsCanvas, 0, 0);
   ctx.globalCompositeOperation = 'source-in';
   ctx.fillRect(0, 0, width, height);
+  ctx.globalCompositeOperation = 'source-over';
+  // drawCircles();
 }
 
 function drawCircles() {
-  ctx.strokeStyle = '#FFF';
   circles.forEach(circle => {
+    ctx.strokeStyle = '#FFF';
     ctx.beginPath();
     ctx.arc(circle.x, circle.y, circle.radius, 0, 360);
+    ctx.stroke();
+    ctx.strokeStyle = 'red';
+    ctx.beginPath();
+    ctx.arc(circle.x, circle.y, circle.radius * 4, 0, 360);
     ctx.stroke();
   });
 }
 
 function drawMetaballs() {
   ctx.fillStyle = '#000';
-  for (let i = 0; i < cols; i += 1) {
-    for (let j = 0; j < rows; j += 1) {
-      const cornerWeights = corners.map(([cx, cy]) =>
-        calcCirclesWeight((cx + i) * gridSize, (cy + j) * gridSize)
-      );
-      const lines = getSquareLines(cornerWeights);
-      if (lines) {
-        drawLines(i, j, interpolateLines(lines, cornerWeights));
+  const visited = [];
+  circles.forEach(circle => {
+    const padding = circle.radius * 4;
+    const fromI = Math.max(
+      0,
+      Math.floor((circle.x - padding) / gridSize)
+    );
+    const fromJ = Math.max(
+      0,
+      Math.floor((circle.y - padding) / gridSize)
+    );
+    const toI = Math.min(
+      cols,
+      Math.floor((circle.x + padding) / gridSize)
+    );
+    const toJ = Math.min(
+      cols,
+      Math.floor((circle.y + padding) / gridSize)
+    );
+
+    for (let i = fromI; i < toI; i += 1) {
+      for (let j = fromJ; j < toJ; j += 1) {
+        const index = j * cols + i;
+        if (!visited[index]) {
+          const cornerWeights = corners.map(([cx, cy]) =>
+            calcCirclesWeight(
+              (cx + i) * gridSize,
+              (cy + j) * gridSize
+            )
+          );
+          const lines = getSquareLines(cornerWeights);
+          if (lines) {
+            drawLines(i, j, interpolateLines(lines, cornerWeights));
+          }
+
+          visited[index] = true;
+        }
       }
     }
-  }
+  });
 }
 
 function drawLines(i, j, lines) {
@@ -162,7 +196,7 @@ function drawGrid() {
 
 function calcCirclesWeight(x, y) {
   return circles.reduce((sum, circle) => {
-    return sum + circle.radius / dist(x, y, circle.x, circle.y);
+    return sum + circle.radius / dist(circle.x, circle.y, x, y);
   }, 0);
 }
 
