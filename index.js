@@ -47,7 +47,7 @@ function draw() {
   updateCircles();
 
   // drawGrid();
-  // drawCircles();
+  drawCircles();
   drawMetaballs();
 }
 
@@ -103,14 +103,27 @@ function drawLines(i, j, lines) {
 }
 
 function interpolateLines(lines, cornerWeights) {
-  // console.log(lines, cornerWeights);
-  if (lines.length === 1) {
-    const [x1, y1, x2, y2] = lines[0];
-    // do interpolation here
-    return lines;
-  } else {
-    return lines;
-  }
+  return lines.map(line => {
+    for (let i = 0; i < line.length; i += 2) {
+      const x = line[i];
+      const y = line[i + 1];
+
+      if (x === 0 || x === 1) {
+        line[i + 1] = lerp(
+          ...(x === 0
+            ? [cornerWeights[0], cornerWeights[3]]
+            : [cornerWeights[1], cornerWeights[2]])
+        );
+      } else if (y === 0 || y === 1) {
+        line[i] = lerp(
+          ...(y === 0
+            ? [cornerWeights[0], cornerWeights[1]]
+            : [cornerWeights[3], cornerWeights[2]])
+        );
+      }
+    }
+    return line;
+  });
 }
 
 function drawGrid() {
@@ -164,143 +177,33 @@ function getSquareLines(weights) {
   const corners = cornersSign(weights.map(n => (n >= 1 ? 1 : 0)));
   switch (corners) { // easier to read corners configuration
     case '0001':
-      return [
-        [
-          0,
-          lerp(weights[0], weights[3]),
-          lerp(weights[3], weights[2]),
-          1
-        ]
-      ];
+      return [[0, 0.5, 0.5, 1]];
     case '0010':
-      return [
-        [
-          1,
-          lerp(weights[1], weights[2]),
-          lerp(weights[3], weights[2]),
-          1
-        ]
-      ];
+      return [[1, 0.5, 0.5, 1]];
     case '0011':
-      return [
-        [
-          0,
-          lerp(weights[0], weights[3]),
-          1,
-          lerp(weights[1], weights[2])
-        ]
-      ];
+      return [[0, 0.5, 1, 0.5]];
     case '0100':
-      return [
-        [
-          lerp(weights[0], weights[1]),
-          0,
-          1,
-          lerp(weights[1], weights[2])
-        ]
-      ];
+      return [[0.5, 0, 1, 0.5]];
     case '0101':
-      return [
-        [
-          0,
-          lerp(weights[0], weights[3]),
-          lerp(weights[0], weights[1]),
-          0
-        ],
-        [
-          lerp(weights[3], weights[2]),
-          1,
-          1,
-          lerp(weights[1], weights[2])
-        ]
-      ];
+      return [[0, 0.5, 0.5, 0], [0.5, 1, 1, 0.5]];
     case '0110':
-      return [
-        [
-          lerp(weights[0], weights[1]),
-          0,
-          lerp(weights[3], weights[2]),
-          1
-        ]
-      ];
+      return [[0.5, 0, 0.5, 1]];
     case '0111':
-      return [
-        [
-          0,
-          lerp(weights[0], weights[3]),
-          lerp(weights[0], weights[1]),
-          0
-        ]
-      ];
+      return [[0, 0.5, 0.5, 0]];
     case '1000':
-      return [
-        [
-          0,
-          lerp(weights[0], weights[3]),
-          lerp(weights[0], weights[1]),
-          0
-        ]
-      ];
+      return [[0, 0.5, 0.5, 0]];
     case '1001':
-      return [
-        [
-          lerp(weights[0], weights[1]),
-          0,
-          lerp(weights[3], weights[2]),
-          1
-        ]
-      ];
+      return [[0.5, 0, 0.5, 1]];
     case '1010':
-      return [
-        [
-          0,
-          lerp(weights[0], weights[3]),
-          lerp(weights[2], weights[3]),
-          1
-        ],
-        [
-          lerp(weights[0], weights[1]),
-          0,
-          1,
-          lerp(weights[1], weights[2])
-        ]
-      ];
+      return [[0, 0.5, 0.5, 1], [0.5, 0, 1, 0.5]];
     case '1011':
-      return [
-        [
-          lerp(weights[0], weights[1]),
-          0,
-          1,
-          lerp(weights[1], weights[2])
-        ]
-      ];
+      return [[0.5, 0, 1, 0.5]];
     case '1100':
-      return [
-        [
-          0,
-          lerp(weights[0], weights[3]),
-          1,
-          lerp(weights[1], weights[2])
-        ]
-      ];
+      return [[0, 0.5, 1, 0.5]];
     case '1101':
-      return [
-        [
-          lerp(weights[3], weights[2]),
-          1,
-          1,
-          lerp(weights[1], weights[2])
-        ]
-      ];
+      return [[0.5, 1, 1, 0.5]];
     case '1110':
-      return [
-        [
-          0,
-          lerp(weights[0], weights[3]),
-          lerp(weights[3], weights[2]),
-          1
-        ]
-      ];
+      return [[0, 0.5, 0.5, 1]];
   }
 }
 
