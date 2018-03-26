@@ -1,8 +1,13 @@
-const width = 400;
-const height = 400;
-const gridSize = 10;
+const width = window.innerWidth;
+const height = window.innerHeight;
+const gridSize = 15;
 const cols = Math.floor(width / gridSize);
 const rows = Math.floor(height / gridSize);
+
+const ballsCanvas = document.createElement('canvas');
+const ballsCtx = ballsCanvas.getContext('2d');
+ballsCanvas.width = width;
+ballsCanvas.height = height;
 
 const cornersByIndex = i => (i >>> 0).toString(2).padStart(4, '0');
 const square_types = Array.from(new Array(16), (_, n) =>
@@ -16,22 +21,29 @@ const corners = [[0, 0], [1, 0], [1, 1], [0, 1]];
 const circles = [
   {
     radius: 30,
-    x: 100,
-    y: 100,
+    x: width / 2,
+    y: height / 2,
     vx: random(-2, 2),
     vy: random(-2, 2)
   },
   {
-    radius: 20,
-    x: 120,
-    y: 100,
-    vx: random(-2, 2),
-    vy: random(-2, 2)
+    radius: 40,
+    x: width / 2,
+    y: height / 2,
+    vx: random(-5, 2),
+    vy: random(-2, 5)
+  },
+  {
+    radius: 35,
+    x: width / 2,
+    y: height / 2,
+    vx: random(-5, 10),
+    vy: random(-12, 5)
   },
   {
     radius: 30,
-    x: 120,
-    y: 100,
+    x: width / 2,
+    y: height / 2,
     vx: random(-2, 2),
     vy: random(-2, 2)
   }
@@ -40,28 +52,27 @@ const circles = [
 canvas.width = width;
 canvas.height = height;
 
+const gradient = ctx.createLinearGradient(0, 0, width, 0);
+gradient.addColorStop(0, '#0cf');
+gradient.addColorStop(1, '#ff0');
+
 function draw() {
   ctx.fillStyle = '#000';
   canvas.width = width;
+  ballsCanvas.width = width;
   // ctx.fillRect(0, 0, width, height);
 
   updateCircles();
 
   // drawGrid();
+
   drawMetaballs();
   // drawCircles();
-}
 
-function drawWeights(i, j, weights) {
-  weights.forEach((w, idx) => {
-    const cy = Math.floor(idx / 2);
-    const cx = (idx - cy) % 2;
-    ctx.fillText(
-      Math.round(w * 10) / 10,
-      (cx + i) * gridSize,
-      (cy + j) * gridSize
-    );
-  });
+  ctx.fillStyle = gradient;
+  ctx.drawImage(ballsCanvas, 0, 0);
+  ctx.globalCompositeOperation = 'source-in';
+  ctx.fillRect(0, 0, width, height);
 }
 
 function drawCircles() {
@@ -80,7 +91,6 @@ function drawMetaballs() {
       const cornerWeights = corners.map(([cx, cy]) =>
         calcCirclesWeight((cx + i) * gridSize, (cy + j) * gridSize)
       );
-      // drawWeights(i, j, cornerWeights);
       const lines = getSquareLines(cornerWeights);
       if (lines) {
         drawLines(i, j, interpolateLines(lines, cornerWeights));
@@ -90,17 +100,20 @@ function drawMetaballs() {
 }
 
 function drawLines(i, j, lines) {
-  ctx.strokeStyle = '#0f0';
+  ballsCtx.strokeStyle = '#0f0';
   lines.forEach(line => {
-    ctx.beginPath();
-    ctx.moveTo((i + line[0]) * gridSize, (j + line[1]) * gridSize);
+    ballsCtx.beginPath();
+    ballsCtx.moveTo(
+      (i + line[0]) * gridSize,
+      (j + line[1]) * gridSize
+    );
     for (let l = 2; l < line.length; l += 2) {
-      ctx.lineTo(
+      ballsCtx.lineTo(
         (i + line[l]) * gridSize,
         (j + line[l + 1]) * gridSize
       );
     }
-    ctx.fill();
+    ballsCtx.fill();
   });
 }
 
@@ -154,20 +167,20 @@ function calcCirclesWeight(x, y) {
 }
 
 function updateCircles() {
-  const threshold = 30;
+  const padding = 100;
   circles.forEach(circle => {
     circle.x += circle.vx;
     circle.y += circle.vy;
     if (
-      circle.x + circle.radius + threshold > width ||
-      circle.x - circle.radius - threshold < 0
+      circle.x + circle.radius + padding > width ||
+      circle.x - circle.radius - padding < 0
     ) {
       circle.vx *= -1;
     }
 
     if (
-      circle.y + circle.radius + threshold > height ||
-      circle.y - circle.radius - threshold < 0
+      circle.y + circle.radius + padding > height ||
+      circle.y - circle.radius - padding < 0
     ) {
       circle.vy *= -1;
     }
