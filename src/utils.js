@@ -18,3 +18,12 @@ export function distFast(x1, y1, x2, y2) {
     )
   );
 }
+
+// Linear interpolation
+export function lerp(b_w, d_w, by = 0, dy = 1) {
+  if (b_w === d_w) {
+    return null;
+  }
+
+  return by + ((dy - by) * (1 - b_w)) / (d_w - b_w);
+}
