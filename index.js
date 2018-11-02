@@ -9,6 +9,9 @@ const ballsCtx = ballsCanvas.getContext('2d');
 ballsCanvas.width = width;
 ballsCanvas.height = height;
 
+const gradCanvas = document.createElement('canvas');
+const gradCtx = gradCanvas.getContext('2d');
+
 const cornersByIndex = i => (i >>> 0).toString(2).padStart(4, '0');
 const square_types = Array.from(new Array(16), (_, n) =>
   cornersByIndex(n)
@@ -20,6 +23,7 @@ const corners = [[0, 0], [1, 0], [1, 1], [0, 1]];
 
 const circles = [
   {
+    color: [0, 255, 170],
     radius: 50,
     x: width / 2 + 30,
     y: height / 2 - 30,
@@ -27,6 +31,7 @@ const circles = [
     vy: random(-2, 2)
   },
   {
+    color: [0, 255, 170],
     radius: 40,
     x: width / 2 + 100,
     y: height / 2 - 30,
@@ -34,6 +39,7 @@ const circles = [
     vy: random(-2, 5)
   },
   {
+    color: [255, 255, 0],
     radius: 75,
     x: width / 2 + 40,
     y: height / 2 + 40,
@@ -41,6 +47,7 @@ const circles = [
     vy: random(-2, 5)
   },
   {
+    color: [255, 255, 0],
     radius: 60,
     x: width / 2,
     y: height / 2,
@@ -51,6 +58,8 @@ const circles = [
 
 canvas.width = width;
 canvas.height = height;
+gradCanvas.width = width;
+gradCanvas.height = height;
 
 const gradient = ctx.createLinearGradient(0, 0, width, 0);
 gradient.addColorStop(0, '#0cf');
@@ -60,28 +69,58 @@ function draw() {
   ctx.fillStyle = '#000';
   canvas.width = width;
   ballsCanvas.width = width;
+  gradCanvas.width = width;
 
   updateCircles();
   drawMetaballs();
 
-  ctx.fillStyle = gradient;
+  // ctx.fillStyle = gradient;
   ctx.drawImage(ballsCanvas, 0, 0);
   ctx.globalCompositeOperation = 'source-in';
-  ctx.fillRect(0, 0, width, height);
+  // ctx.fillRect(0, 0, width, height);
+
+  circles.forEach(circle => {
+    gradCtx.globalCompositeOperation = 'source-over';
+    const grad = gradCtx.createRadialGradient(
+      circle.x,
+      circle.y,
+      circle.radius * 0,
+      circle.x,
+      circle.y,
+      circle.radius * 2.5
+    );
+    grad.addColorStop(0, `rgba(${circle.color.join(', ')}, 1)`);
+    grad.addColorStop(1, `rgba(${circle.color.join(', ')}, 0)`);
+    gradCtx.fillStyle = grad;
+    gradCtx.fillRect(
+      circle.x - circle.radius * 2.5,
+      circle.y - circle.radius * 2.5,
+      circle.radius * 5,
+      circle.radius * 5
+    );
+    gradCtx.fillRect(
+      circle.x - circle.radius * 2.5,
+      circle.y - circle.radius * 2.5,
+      circle.radius * 5,
+      circle.radius * 5
+    );
+  });
+
+  ctx.drawImage(gradCanvas, 0, 0);
   ctx.globalCompositeOperation = 'source-over';
   // drawCircles();
 }
 
 function drawCircles() {
   circles.forEach(circle => {
-    ctx.strokeStyle = '#FFF';
+    ctx.strokeStyle = '#000';
     ctx.beginPath();
     ctx.arc(circle.x, circle.y, circle.radius, 0, 360);
     ctx.stroke();
-    ctx.strokeStyle = 'red';
-    ctx.beginPath();
-    ctx.arc(circle.x, circle.y, circle.radius * 4, 0, 360);
-    ctx.stroke();
+    // ctx.strokeStyle = 'red';
+    // ctx.beginPath();
+    // ctx.arc(circle.x, circle.y, circle.radius * 4, 0, 360);
+    // ctx.stroke();
   });
 }
 
@@ -240,7 +279,9 @@ function cornersSign(cornersArr) {
 
 function getSquareLines(weights) {
   const corners = cornersSign(weights.map(n => (n >= 1 ? 1 : 0)));
-  switch (corners) { // easier to read corners configuration
+  switch (
+    corners // easier to read corners configuration
+  ) {
     case '0001':
       return [[0, 0.5, 0.5, 1, 0, 1]];
     case '0010':
@@ -280,5 +321,5 @@ function lerp(b_w, d_w, by = 0, dy = 1) {
     return null;
   }
 
-  return by + (dy - by) * (1 - b_w) / (d_w - b_w);
+  return by + ((dy - by) * (1 - b_w)) / (d_w - b_w);
 }

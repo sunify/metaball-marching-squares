@@ -9,7 +9,7 @@ window.addEventListener('click', () => {
 let prevT = 0;
 function runDraw(t) {
   requestAnimationFrame(runDraw);
-  if (t - prevT < 1000 / 30 || stopped) return;
+  if (t - prevT < 1000 / 60 || stopped) return;
 
   if (typeof draw === 'function') {
     draw();
