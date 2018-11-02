@@ -10,6 +10,7 @@
     "run-with-fps": "^1.0.1"
   },
   "scripts": {
-    "start": "./node_modules/.bin/parcel index.html --open"
+    "start": "./node_modules/.bin/parcel index.html --open",
+    "build": "rm -R dist && ./node_modules/.bin/parcel build --public-url ./ index.html"
   }
 }
