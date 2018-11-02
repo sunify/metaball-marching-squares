@@ -1,15 +1,18 @@
 import { random } from './utils';
 
 export function orbitalUpdater(circles) {
-  circles.forEach(circle => {
+  circles.forEach((circle, i) => {
     const t = Date.now() / 1000;
+    circle.oradius = circle.oradius || circle.radius;
+    circle.radius =
+      circle.oradius + (i % 2 ? Math.sin : Math.cos)(t * 2) * 5;
     circle.ox = circle.ox || circle.x;
     circle.oy = circle.oy || circle.y;
     circle.x =
-      circle.ox + Math.cos(t) * circle.radius * circle.vx * 0.3;
+      circle.ox + (Math.cos(t) * circle.radius * circle.vx) / 2;
     circle.y =
       circle.oy +
-      Math.sin(t) * circle.radius * circle.vy +
+      (Math.sin(t) * circle.radius * circle.vy) / 2 +
       Math.cos(t) * 20;
   });
 }
