@@ -1,0 +1,15 @@
+{
+  "name": "metaballs-marching-squares",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "git@github.com:sunify/metaball-marching-squares.git",
+  "author": "Alex Lunyov <isuntc@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "parcel-bundler": "^1.10.3",
+    "run-with-fps": "^1.0.1"
+  },
+  "scripts": {
+    "start": "./node_modules/.bin/parcel index.html --open"
+  }
+}

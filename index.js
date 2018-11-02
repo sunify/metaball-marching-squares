@@ -1,3 +1,8 @@
+import runWithFPS from 'run-with-fps';
+import { random } from './utils';
+
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
 const width = window.innerWidth;
 const height = window.innerHeight;
 const gridSize = 15;
@@ -110,6 +115,8 @@ function draw() {
   ctx.globalCompositeOperation = 'source-over';
   // drawCircles();
 }
+
+runWithFPS(draw, 30);
 
 function drawCircles() {
   circles.forEach(circle => {
