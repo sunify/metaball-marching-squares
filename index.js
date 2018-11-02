@@ -1,13 +1,37 @@
 import runWithFPS from 'run-with-fps';
 import { random } from './utils';
 
+const gridSizeInput = document.getElementById('gridSize');
+const gridVisInput = document.getElementById('gridVisibility');
+const gridSizeValue = document.getElementById('gridSizeValue');
+
 const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext('2d');
 const width = window.innerWidth;
 const height = window.innerHeight;
-const gridSize = 15;
-const cols = Math.floor(width / gridSize);
-const rows = Math.floor(height / gridSize);
+
+const grid = {
+  size: 1,
+  visible: gridVisInput.checked,
+  get cols() {
+    return width / this.size;
+  },
+  get rows() {
+    return height / this.size;
+  }
+};
+
+const updateGrid = input => {
+  grid.size = Number(input.value);
+  gridSizeValue.innerText = `Grid: ${grid.size}px`;
+};
+updateGrid(gridSizeInput);
+gridSizeInput.addEventListener('input', e => {
+  updateGrid(e.target);
+});
+gridVisInput.addEventListener('change', e => {
+  grid.visible = e.target.checked;
+});
 
 const ballsCanvas = document.createElement('canvas');
 const ballsCtx = ballsCanvas.getContext('2d');
@@ -66,10 +90,6 @@ canvas.height = height;
 gradCanvas.width = width;
 gradCanvas.height = height;
 
-const gradient = ctx.createLinearGradient(0, 0, width, 0);
-gradient.addColorStop(0, '#0cf');
-gradient.addColorStop(1, '#ff0');
-
 function draw() {
   ctx.fillStyle = '#000';
   canvas.width = width;
@@ -79,11 +99,76 @@ function draw() {
   updateCircles();
   drawMetaballs();
 
-  // ctx.fillStyle = gradient;
   ctx.drawImage(ballsCanvas, 0, 0);
   ctx.globalCompositeOperation = 'source-in';
-  // ctx.fillRect(0, 0, width, height);
 
+  drawGradient();
+
+  ctx.drawImage(gradCanvas, 0, 0);
+  ctx.globalCompositeOperation = 'source-over';
+  // drawCircles();
+
+  if (grid.visible) {
+    drawGrid();
+  }
+}
+
+runWithFPS(draw, 30);
+
+function drawCircles() {
+  circles.forEach(circle => {
+    ctx.strokeStyle = '#000';
+    ctx.beginPath();
+    ctx.arc(circle.x, circle.y, circle.radius, 0, 360);
+    ctx.stroke();
+  });
+}
+
+function drawMetaballs() {
+  ctx.fillStyle = '#000';
+  const visited = [];
+  circles.forEach(circle => {
+    const padding = circle.radius * 4;
+    const fromI = Math.max(
+      0,
+      Math.floor((circle.x - padding) / grid.size)
+    );
+    const fromJ = Math.max(
+      0,
+      Math.floor((circle.y - padding) / grid.size)
+    );
+    const toI = Math.min(
+      grid.cols,
+      Math.floor((circle.x + padding) / grid.size)
+    );
+    const toJ = Math.min(
+      grid.cols,
+      Math.floor((circle.y + padding) / grid.size)
+    );
+
+    for (let i = fromI; i < toI; i += 1) {
+      for (let j = fromJ; j < toJ; j += 1) {
+        const index = j * grid.cols + i;
+        if (!visited[index]) {
+          const cornerWeights = corners.map(([cx, cy]) =>
+            calcCirclesWeight(
+              (cx + i) * grid.size,
+              (cy + j) * grid.size
+            )
+          );
+          const lines = getSquareLines(cornerWeights);
+          if (lines) {
+            drawLines(i, j, interpolateLines(lines, cornerWeights));
+          }
+
+          visited[index] = true;
+        }
+      }
+    }
+  });
+}
+
+function drawGradient() {
   circles.forEach(circle => {
     gradCtx.globalCompositeOperation = 'source-over';
     const grad = gradCtx.createRadialGradient(
@@ -110,69 +195,6 @@ function draw() {
       circle.radius * 5
     );
   });
-
-  ctx.drawImage(gradCanvas, 0, 0);
-  ctx.globalCompositeOperation = 'source-over';
-  // drawCircles();
-}
-
-runWithFPS(draw, 30);
-
-function drawCircles() {
-  circles.forEach(circle => {
-    ctx.strokeStyle = '#000';
-    ctx.beginPath();
-    ctx.arc(circle.x, circle.y, circle.radius, 0, 360);
-    ctx.stroke();
-    // ctx.strokeStyle = 'red';
-    // ctx.beginPath();
-    // ctx.arc(circle.x, circle.y, circle.radius * 4, 0, 360);
-    // ctx.stroke();
-  });
-}
-
-function drawMetaballs() {
-  ctx.fillStyle = '#000';
-  const visited = [];
-  circles.forEach(circle => {
-    const padding = circle.radius * 4;
-    const fromI = Math.max(
-      0,
-      Math.floor((circle.x - padding) / gridSize)
-    );
-    const fromJ = Math.max(
-      0,
-      Math.floor((circle.y - padding) / gridSize)
-    );
-    const toI = Math.min(
-      cols,
-      Math.floor((circle.x + padding) / gridSize)
-    );
-    const toJ = Math.min(
-      cols,
-      Math.floor((circle.y + padding) / gridSize)
-    );
-
-    for (let i = fromI; i < toI; i += 1) {
-      for (let j = fromJ; j < toJ; j += 1) {
-        const index = j * cols + i;
-        if (!visited[index]) {
-          const cornerWeights = corners.map(([cx, cy]) =>
-            calcCirclesWeight(
-              (cx + i) * gridSize,
-              (cy + j) * gridSize
-            )
-          );
-          const lines = getSquareLines(cornerWeights);
-          if (lines) {
-            drawLines(i, j, interpolateLines(lines, cornerWeights));
-          }
-
-          visited[index] = true;
-        }
-      }
-    }
-  });
 }
 
 function drawLines(i, j, lines) {
@@ -180,13 +202,13 @@ function drawLines(i, j, lines) {
   lines.forEach(line => {
     ballsCtx.beginPath();
     ballsCtx.moveTo(
-      (i + line[0]) * gridSize,
-      (j + line[1]) * gridSize
+      (i + line[0]) * grid.size,
+      (j + line[1]) * grid.size
     );
     for (let l = 2; l < line.length; l += 2) {
       ballsCtx.lineTo(
-        (i + line[l]) * gridSize,
-        (j + line[l + 1]) * gridSize
+        (i + line[l]) * grid.size,
+        (j + line[l + 1]) * grid.size
       );
     }
     ballsCtx.fill();
@@ -227,10 +249,11 @@ function interpolateLines(lines, cornerWeights) {
 
 function drawGrid() {
   ctx.strokeStyle = '#555';
-  for (let i = 0; i < cols; i += 1) {
-    for (let j = 0; j < rows; j += 1) {
+  ctx.lineWidth = 0.1;
+  for (let i = 0; i < grid.cols; i += 1) {
+    for (let j = 0; j < grid.rows; j += 1) {
       ctx.beginPath();
-      ctx.rect(i * gridSize, j * gridSize, gridSize, gridSize);
+      ctx.rect(i * grid.size, j * grid.size, grid.size, grid.size);
       ctx.stroke();
     }
   }
