@@ -1,11 +1,17 @@
 import { random } from './utils';
 
-export function orbitalUpdater(circles) {
+export function pulsarUpdater(circles) {
   circles.forEach((circle, i) => {
     const t = Date.now() / 1000;
     circle.oradius = circle.oradius || circle.radius;
     circle.radius =
       circle.oradius + (i % 2 ? Math.sin : Math.cos)(t * 2) * 5;
+  });
+}
+
+export function orbitalUpdater(circles) {
+  circles.forEach(circle => {
+    const t = Date.now() / 1000;
     circle.ox = circle.ox || circle.x;
     circle.oy = circle.oy || circle.y;
     circle.x =
@@ -49,7 +55,7 @@ export const createCircles = (width, height) => [
     ay: 0
   },
   {
-    color: [0, 0, 255],
+    color: [0, 120, 255],
     radius: 50,
     x: width / 2 + 160,
     y: height / 2 + 260,

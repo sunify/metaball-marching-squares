@@ -2,7 +2,7 @@ import runWithFPS from 'run-with-fps';
 import { createGradientDrawer } from './src/gradientDrawer';
 import { createMetaballsDrawer } from './src/metaballsDrawer';
 import { initGridUI, drawGrid } from './src/gridUI';
-import { createCircles, orbitalUpdater } from './src/circles';
+import { createCircles, pulsarUpdater } from './src/circles';
 import { distFast } from './src/utils';
 
 const width = window.innerWidth;
@@ -33,27 +33,45 @@ function applyToCircle(circle, cf) {
   const dx = circle.x - cf.x;
   const dy = circle.y - cf.y;
 
-  const dist = Math.max(distFast(circle.x, circle.y, cf.x, cf.y));
+  const dist = Math.max(30, distFast(circle.x, circle.y, cf.x, cf.y));
   if (dist < Math.max(circle.radius, cf.radius)) {
     // circle.ax *= 0.99;
     // circle.ay *= 0.99;
-    circle.vx *= 0.99;
-    circle.vy *= 0.99;
+    circle.vx *= 0.995;
+    circle.vy *= 0.995;
     // return;
   }
   const forceValue =
-    ((dist < circle.radius / 2 ? 1 : -1) *
-      circle.radius *
-      cf.radius) /
-    Math.pow(dist, 2) /
-    100;
+    (-circle.radius * cf.radius) / Math.pow(dist, 2) / 100;
   circle.ax += forceValue * dx;
   circle.ay += forceValue * dy;
 }
 
+const mouse = {
+  x: width / 2,
+  y: height / 2,
+  radius: 0
+};
+
+// document.addEventListener('mousemove', e => {
+//   mouse.x = e.pageX;
+//   mouse.y = e.pageY;
+// });
+
+document.addEventListener('click', e => {
+  if (e.altKey) {
+    mouse.radius -= 100;
+  } else {
+    mouse.radius += 100;
+  }
+  document.getElementById('force').innerText = mouse.radius;
+});
+
 function draw() {
   ctx.fillStyle = '#000';
   canvas.width = width;
+
+  pulsarUpdater(circles);
 
   circles.forEach(circle => {
     circles.forEach(cf => {
@@ -61,6 +79,7 @@ function draw() {
         applyToCircle(circle, cf);
       }
     });
+    applyToCircle(circle, mouse);
     circle.ax *= 0.3;
     circle.ay *= 0.3;
 
@@ -74,7 +93,6 @@ function draw() {
       circle.y - circle.radius - 5 < 0
     ) {
       circle.vy *= -1;
-      // circle.vx *= 0.9;
     }
 
     if (
@@ -82,29 +100,7 @@ function draw() {
       circle.x - circle.radius - 5 < 0
     ) {
       circle.vx *= -1;
-      // circle.vy *= 0.9;
     }
-
-    // circles.forEach((cf, i) => {
-    //   if (cf !== circle) {
-    //     const dx = Math.abs(circle.x - cf.x);
-    //     const dy = Math.abs(circle.y - cf.y);
-    //     if (dx < 20 && dy < 20 && cf.radius < circle.radius) {
-    //       circle.radius = (circle.radius + cf.radius) / 2;
-    //       circle.vx = (circle.vx + cf.vx) / 2;
-    //       circle.vy = (circle.vy + cf.vy) / 2;
-    //       const circleP = circle.radius / (circle.radius + cf.radius);
-    //       circle.color = [
-    //         lerp(0, circleP, cf.color[0], circle.color[0]),
-    //         lerp(0, circleP, cf.color[1], circle.color[1]),
-    //         lerp(0, circleP, cf.color[2], circle.color[2])
-    //       ]
-    //         .map(Math.round)
-    //         .map(Math.abs);
-    //       circles.splice(i, 1);
-    //     }
-    //   }
-    // });
   });
 
   ctx.drawImage(metaballsDrawer(width, height), 0, 0);
