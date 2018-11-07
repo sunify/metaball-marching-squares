@@ -2,7 +2,12 @@ import runWithFPS from 'run-with-fps';
 import { createGradientDrawer } from './src/gradientDrawer';
 import { createMetaballsDrawer } from './src/metaballsDrawer';
 import { initGridUI, drawGrid } from './src/gridUI';
-import { createCircles, orbitalUpdater } from './src/circles';
+import {
+  createCircles,
+  orbitalUpdater,
+  pulsarUpdater
+} from './src/circles';
+import { distFast, random } from './src/utils';
 
 const width = window.innerWidth;
 const height = window.innerHeight;
@@ -28,11 +33,141 @@ initGridUI(grid);
 const gradientDrawer = createGradientDrawer(circles);
 const metaballsDrawer = createMetaballsDrawer(circles, grid);
 
+const springs = [];
+circles.forEach(c1 => {
+  circles.forEach(c2 => {
+    if (c1 !== c2) {
+      springs.push({
+        points: [c1, c2],
+        length: 0,
+        v12: [0, 0],
+        dir12: [0, 0]
+      });
+    }
+  });
+});
+
+function norm(vector) {
+  var sum = 0;
+  var i;
+  for (i in vector) sum += vector[i] * vector[i];
+  return Math.sqrt(sum);
+}
+
+function diff(p1, p2) {
+  var res = [];
+  var i = 0;
+  for (i = 0; i < p1.length; ++i) res[i] = p1[i] - p2[i];
+  return res;
+}
+
+function dot(v1, v2) {
+  var sum = 0;
+  var i;
+  for (i in v1) sum += v1[i] * v2[i];
+  return sum;
+}
+
+const grav = {
+  x: width / 2,
+  y: height / 2,
+  vx: random(-10, 10),
+  vy: random(-10, 10)
+};
+
+circles.forEach(c1 => {
+  c1.ax = 0;
+  c1.ay = 0;
+});
 function draw() {
   ctx.fillStyle = '#000';
   canvas.width = width;
 
-  orbitalUpdater(circles);
+  pulsarUpdater(circles);
+
+  grav.x += grav.vx;
+  grav.y += grav.vy;
+
+  springs.forEach(spring => {
+    const [c1, c2] = spring.points;
+    spring.v12 = [c2.x - c1.x, c2.y - c1.y];
+    spring.length = norm(spring.v12);
+    if (spring.length === 0) {
+      spring.v12 = [
+        Math.random() / 10 - 0.05,
+        Math.random() / 10 - 0.05
+      ];
+      spring.length = norm(spring.v12);
+    }
+    spring.dir12 = [
+      spring.v12[0] / spring.length,
+      spring.v12[1] / spring.length
+    ];
+
+    const { dir12 } = spring;
+    const springDamping = 0.3;
+    const springStiffness = 0.07;
+    const restLength = c1.radius + c2.radius;
+    const cte =
+      springStiffness * (spring.length - restLength) -
+      springDamping *
+        dot(diff([c1.vx, c1.vy], [c2.vx, c2.vy]), dir12);
+    var force1 = [cte * dir12[0], cte * dir12[1]];
+    var force2 = [-force1[0], -force1[1]];
+    c1.ax += force1[0];
+    c1.ay += force1[1];
+    c2.ax += force2[0];
+    c2.ay += force2[1];
+  });
+
+  circles.forEach((c1, i) => {
+    const dx = grav.x - c1.x;
+    const dy = grav.y - c1.y;
+    const d = distFast(grav.x, grav.y, c1.x, c1.y);
+    // c1.ax += (dx / Math.pow(d, 1.4)) * 9.8;
+    // c1.ay += (dy / Math.pow(d, 1.4)) * 9.8;
+
+    c1.vx += c1.ax;
+    c1.vy += c1.ay;
+    c1.vx *= 0.3;
+    c1.vy *= 0.3;
+    c1.x += c1.vx;
+    c1.y += c1.vy;
+    if (i === 0) {
+      c1.x += grav.vx;
+      c1.y += grav.vy;
+    }
+
+    if (c1.x - c1.radius < 0) {
+      c1.x = c1.radius;
+      if (c1.vx < 0) c1.vx = 0;
+      c1.vy *= -0.999;
+      c1.ay *= -0.999;
+      grav.vx *= -1;
+    }
+
+    if (c1.y - c1.radius < 0) {
+      c1.y = c1.radius;
+      if (c1.vy < 0) c1.vy = 0;
+      c1.vx *= -0.999;
+      c1.ax *= -0.999;
+      grav.vy *= -1;
+    }
+    if (c1.x + c1.radius > width) {
+      c1.x = width - c1.radius;
+      if (c1.vx > 0) c1.vx = 0;
+      c1.vy *= -0.999;
+      c1.ay *= -0.999;
+      grav.vx *= -1;
+    }
+    if (c1.y + c1.radius > height) {
+      c1.y = height - c1.radius;
+      if (c1.vy > 0) c1.vy = 0;
+      c1.vx *= -0.999;
+      c1.ax *= -0.999;
+      grav.vy *= -1;
+    }
+  });
 
   ctx.drawImage(metaballsDrawer(width, height), 0, 0);
   ctx.globalCompositeOperation = 'source-in';
@@ -40,12 +175,24 @@ function draw() {
   ctx.drawImage(gradientDrawer(width, height), 0, 0);
   ctx.globalCompositeOperation = 'source-over';
 
+  springs.forEach(spring => {
+    const [c1, c2] = spring.points;
+    ctx.beginPath();
+    ctx.moveTo(c1.x, c1.y);
+    ctx.lineTo(c2.x, c2.y);
+    ctx.stroke();
+  });
+
+  ctx.fillStyle = '#000';
+  ctx.fillRect(grav.x - 2, grav.y - 2, 4, 4);
+
   if (grid.visible) {
     drawGrid(ctx, grid);
   }
 }
 
 runWithFPS(draw, 30);
+// draw(Date.now());
 
 function drawCircles() {
   circles.forEach(circle => {
