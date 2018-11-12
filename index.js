@@ -75,18 +75,15 @@ const grav = {
   vy: random(-10, 10)
 };
 
-circles.forEach(c1 => {
-  c1.ax = 0;
-  c1.ay = 0;
-});
+// circles.forEach(c1 => {
+//   c1.ax = 0;
+//   c1.ay = 0;
+// });
 function draw() {
   ctx.fillStyle = '#000';
   canvas.width = width;
 
   pulsarUpdater(circles);
-
-  grav.x += grav.vx;
-  grav.y += grav.vy;
 
   springs.forEach(spring => {
     const [c1, c2] = spring.points;
@@ -106,8 +103,8 @@ function draw() {
 
     const { dir12 } = spring;
     const springDamping = 0.3;
-    const springStiffness = 0.07;
-    const restLength = c1.radius + c2.radius;
+    const springStiffness = 0.15;
+    const restLength = (c1.radius + c2.radius) * 1.2;
     const cte =
       springStiffness * (spring.length - restLength) -
       springDamping *
@@ -120,52 +117,50 @@ function draw() {
     c2.ay += force2[1];
   });
 
+  let hasCollision = false;
   circles.forEach((c1, i) => {
-    const dx = grav.x - c1.x;
-    const dy = grav.y - c1.y;
-    const d = distFast(grav.x, grav.y, c1.x, c1.y);
-    // c1.ax += (dx / Math.pow(d, 1.4)) * 9.8;
-    // c1.ay += (dy / Math.pow(d, 1.4)) * 9.8;
+    // const dx = grav.x - c1.x || 0.0001;
+    // const dy = grav.y - c1.y || 0.0001;
+    // const d = distFast(grav.x, grav.y, c1.x, c1.y);
+    // console.log(d);
+    // c1.ax += (dx / Math.pow(d, 2)) * 0.001;
+    // c1.ay += (dy / Math.pow(d, 2)) * 0.001;
 
-    c1.vx += c1.ax;
-    c1.vy += c1.ay;
-    c1.vx *= 0.3;
-    c1.vy *= 0.3;
+    c1.vx += c1.ax * 0.3;
+    c1.vy += c1.ay * 0.3;
+    c1.vx *= 0.45;
+    c1.vy *= 0.45;
     c1.x += c1.vx;
     c1.y += c1.vy;
-    if (i === 0) {
-      c1.x += grav.vx;
-      c1.y += grav.vy;
-    }
 
     if (c1.x - c1.radius < 0) {
       c1.x = c1.radius;
       if (c1.vx < 0) c1.vx = 0;
-      c1.vy *= -0.999;
-      c1.ay *= -0.999;
-      grav.vx *= -1;
+      c1.vy *= -1;
+      c1.ax *= -5;
+      hasCollision = [-1, 1];
     }
 
     if (c1.y - c1.radius < 0) {
       c1.y = c1.radius;
       if (c1.vy < 0) c1.vy = 0;
-      c1.vx *= -0.999;
-      c1.ax *= -0.999;
-      grav.vy *= -1;
+      c1.vx *= -1;
+      c1.ay *= -5;
+      hasCollision = [1, -1];
     }
     if (c1.x + c1.radius > width) {
       c1.x = width - c1.radius;
       if (c1.vx > 0) c1.vx = 0;
-      c1.vy *= -0.999;
-      c1.ay *= -0.999;
-      grav.vx *= -1;
+      c1.vy *= -1;
+      c1.ax *= -5;
+      hasCollision = [-1, 1];
     }
     if (c1.y + c1.radius > height) {
       c1.y = height - c1.radius;
       if (c1.vy > 0) c1.vy = 0;
-      c1.vx *= -0.999;
-      c1.ax *= -0.999;
-      grav.vy *= -1;
+      c1.vx *= -1;
+      c1.ay *= -5;
+      hasCollision = [1, -1];
     }
   });
 
@@ -175,16 +170,16 @@ function draw() {
   ctx.drawImage(gradientDrawer(width, height), 0, 0);
   ctx.globalCompositeOperation = 'source-over';
 
-  springs.forEach(spring => {
-    const [c1, c2] = spring.points;
-    ctx.beginPath();
-    ctx.moveTo(c1.x, c1.y);
-    ctx.lineTo(c2.x, c2.y);
-    ctx.stroke();
-  });
+  // springs.forEach(spring => {
+  //   const [c1, c2] = spring.points;
+  //   ctx.beginPath();
+  //   ctx.moveTo(c1.x, c1.y);
+  //   ctx.lineTo(c2.x, c2.y);
+  //   ctx.stroke();
+  // });
 
-  ctx.fillStyle = '#000';
-  ctx.fillRect(grav.x - 2, grav.y - 2, 4, 4);
+  // ctx.fillStyle = '#000';
+  // ctx.fillRect(grav.x - 2, grav.y - 2, 4, 4);
 
   if (grid.visible) {
     drawGrid(ctx, grid);

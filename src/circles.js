@@ -20,37 +20,64 @@ export function orbitalUpdater(circles) {
   });
 }
 
+const base = {
+  ax: random(-1, 1) * 50,
+  ay: random(-1, 1) * 50
+};
+
 export const createCircles = (width, height) => [
   {
+    ...base,
     color: [255, 255, 0],
-    radius: 120,
+    radius: 60,
     x: width / 2,
     y: height / 2,
-    vx: 10,
+    vx: 0,
     vy: 0
   },
   {
-    color: [255, 255, 0],
-    radius: 80,
-    x: width / 2 - 100,
-    y: height / 2 - 100,
-    vx: 10,
-    vy: 0
-  },
-  {
-    color: [0, 255, 170],
-    radius: 80,
+    ...base,
+    color: [0, 255, 140],
+    radius: 40,
     x: width / 2,
     y: height / 2,
-    vx: 10,
+    vx: 0,
     vy: 0
   },
   {
+    ...base,
     color: [0, 255, 170],
+    radius: 70,
+    x: width / 2,
+    y: height / 2,
+    vx: 0,
+    vy: 0
+  },
+  {
+    ...base,
+    color: [0, 255, 140],
     radius: 50,
     x: width / 2,
     y: height / 2,
-    vx: 10,
+    vx: 0,
+    vy: 0
+  },
+  {
+    ...base,
+    color: [255, 255, 0],
+    radius: 60,
+    x: width / 2,
+    y: height / 2,
+    vx: 0,
+    vy: 0
+  },
+  {
+    ...base,
+    color: [255, 255, 0],
+    radius: 60,
+    x: width / 2,
+    y: height / 2,
+    vx: 0,
     vy: 0
   }
 ];
