@@ -28,15 +28,6 @@ const base = {
 export const createCircles = (width, height) => [
   {
     ...base,
-    color: [255, 255, 0],
-    radius: 60,
-    x: width / 2,
-    y: height / 2,
-    vx: 0,
-    vy: 0
-  },
-  {
-    ...base,
     color: [0, 255, 140],
     radius: 40,
     x: width / 2,
@@ -55,29 +46,38 @@ export const createCircles = (width, height) => [
   },
   {
     ...base,
+    color: [255, 255, 0],
+    radius: 60,
+    x: width / 2,
+    y: height / 2,
+    vx: 0,
+    vy: 0
+  },
+  {
+    ...base,
     color: [0, 255, 140],
     radius: 50,
     x: width / 2,
     y: height / 2,
     vx: 0,
     vy: 0
-  },
-  {
-    ...base,
-    color: [255, 255, 0],
-    radius: 60,
-    x: width / 2,
-    y: height / 2,
-    vx: 0,
-    vy: 0
-  },
-  {
-    ...base,
-    color: [255, 255, 0],
-    radius: 60,
-    x: width / 2,
-    y: height / 2,
-    vx: 0,
-    vy: 0
   }
+  // {
+  //   ...base,
+  //   color: [255, 255, 0],
+  //   radius: 60,
+  //   x: width / 2,
+  //   y: height / 2,
+  //   vx: 0,
+  //   vy: 0
+  // },
+  // {
+  //   ...base,
+  //   color: [255, 255, 0],
+  //   radius: 60,
+  //   x: width / 2,
+  //   y: height / 2,
+  //   vx: 0,
+  //   vy: 0
+  // }
 ];

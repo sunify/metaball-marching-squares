@@ -102,19 +102,19 @@ function draw() {
     ];
 
     const { dir12 } = spring;
-    const springDamping = 0.3;
-    const springStiffness = 0.15;
-    const restLength = (c1.radius + c2.radius) * 1.2;
+    const springDamping = 0.2;
+    const springStiffness = 0.2;
+    const restLength = (c1.radius + c2.radius) / 1.2;
     const cte =
       springStiffness * (spring.length - restLength) -
       springDamping *
         dot(diff([c1.vx, c1.vy], [c2.vx, c2.vy]), dir12);
     var force1 = [cte * dir12[0], cte * dir12[1]];
     var force2 = [-force1[0], -force1[1]];
-    c1.ax += force1[0];
-    c1.ay += force1[1];
-    c2.ax += force2[0];
-    c2.ay += force2[1];
+    c1.ax += force1[0] * 0.2;
+    c1.ay += force1[1] * 0.2;
+    c2.ax += force2[0] * 0.2;
+    c2.ay += force2[1] * 0.2;
   });
 
   let hasCollision = false;
@@ -126,40 +126,41 @@ function draw() {
     // c1.ax += (dx / Math.pow(d, 2)) * 0.001;
     // c1.ay += (dy / Math.pow(d, 2)) * 0.001;
 
+    // c1.radius = c1.or / c1.ax;
     c1.vx += c1.ax * 0.3;
     c1.vy += c1.ay * 0.3;
-    c1.vx *= 0.45;
-    c1.vy *= 0.45;
+    c1.vx *= 0.3;
+    c1.vy *= 0.3;
     c1.x += c1.vx;
     c1.y += c1.vy;
 
-    if (c1.x - c1.radius < 0) {
-      c1.x = c1.radius;
-      if (c1.vx < 0) c1.vx = 0;
-      c1.vy *= -1;
-      c1.ax *= -5;
+    if (c1.x - c1.radius * 1.1 < 0) {
+      c1.x = c1.radius * 1.1;
+      c1.vy = 0;
+      c1.vx *= -1;
+      c1.ax *= -2;
       hasCollision = [-1, 1];
     }
 
-    if (c1.y - c1.radius < 0) {
-      c1.y = c1.radius;
-      if (c1.vy < 0) c1.vy = 0;
-      c1.vx *= -1;
-      c1.ay *= -5;
+    if (c1.y - c1.radius * 1.1 < 0) {
+      c1.y = c1.radius * 1.1;
+      c1.vx = 0;
+      c1.vy *= -1;
+      c1.ay *= -2;
       hasCollision = [1, -1];
     }
-    if (c1.x + c1.radius > width) {
-      c1.x = width - c1.radius;
-      if (c1.vx > 0) c1.vx = 0;
-      c1.vy *= -1;
-      c1.ax *= -5;
+    if (c1.x + c1.radius * 1.1 > width) {
+      c1.x = width - c1.radius * 1.1;
+      c1.vy = 0;
+      c1.vx *= -1;
+      c1.ax *= -2;
       hasCollision = [-1, 1];
     }
-    if (c1.y + c1.radius > height) {
-      c1.y = height - c1.radius;
-      if (c1.vy > 0) c1.vy = 0;
-      c1.vx *= -1;
-      c1.ay *= -5;
+    if (c1.y + c1.radius * 1.1 > height) {
+      c1.y = height - c1.radius * 1.1;
+      c1.vy *= -1;
+      c1.vx = 0;
+      c1.ay *= -2;
       hasCollision = [1, -1];
     }
   });
