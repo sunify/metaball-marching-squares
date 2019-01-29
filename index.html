@@ -1,36 +1,50 @@
 <!DOCTYPE html>
 <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0"
+    />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>Metaballs</title>
+    <style>
+      html,
+      body {
+        padding: 0;
+        margin: 0;
+      }
 
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="X-UA-Compatible" content="ie=edge" />
-  <title>Metaballs</title>
-  <style>
-    html,
-    body {
-      padding: 0;
-      margin: 0;
-    }
+      .control {
+        position: fixed;
+        top: 0;
+        left: 0;
+        background-color: rgba(255, 255, 255, 0.3);
+      }
+    </style>
+  </head>
 
-    .control {
-      position: fixed;
-      top: 0;
-      left: 0;
-      background-color: rgba(255, 255, 255, 0.3);
-    }
-  </style>
-</head>
-
-<body>
-  <div class="control">
-    <input type="range" id="gridSize" min="1" max="100" value="15" step="1" />
-    <span id="gridSizeValue"></span>
-    <label><input type="checkbox" id="gridVisibility" /> show grid</label><br />
-    <span>Center gravity: <span id="force">0</span> (click to +, alt+click to −)</span>
-  </div>
-  <canvas id="canvas"></canvas>
-  <script src="index.js"></script>
-</body>
-
+  <body>
+    <div class="control">
+      <input
+        type="range"
+        id="gridSize"
+        min="1"
+        max="100"
+        value="20"
+        step="1"
+      />
+      <span id="gridSizeValue"></span>
+      <label
+        ><input type="checkbox" id="gridVisibility" /> show
+        grid</label
+      ><br />
+      <span
+        >Center gravity: <span id="force">0</span> (click to +,
+        alt+click to −)</span
+      >
+    </div>
+    <canvas id="canvas"></canvas>
+    <script src="index.js"></script>
+  </body>
 </html>

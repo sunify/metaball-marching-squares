@@ -25,52 +25,22 @@ export function orbitalUpdater(circles) {
 
 export const createCircles = (width, height) => [
   {
-    color: [0, 255, 170],
-    radius: 70,
-    x: width / 2 - 160,
-    y: height / 2 + 130,
-    vx: random(-2, 2),
-    vy: random(-2, 2),
-    ax: 0,
-    ay: 0
-  },
-  {
-    color: [255, 0, 120],
-    radius: 80,
-    x: width / 2 + 160,
-    y: height / 2 + 160,
-    vx: random(-2, 2),
-    vy: random(-2, 2),
-    ax: 0,
-    ay: 0
-  },
-  {
-    color: [255, 255, 120],
+    color: [44, 249, 172],
     radius: 60,
-    x: width / 2 - 360,
-    y: height / 2 - 260,
-    vx: random(-2, 2),
-    vy: random(-2, 2),
-    ax: 0,
-    ay: 0
-  },
-  {
-    color: [0, 120, 255],
-    radius: 50,
-    x: width / 2 + 160,
-    y: height / 2 + 260,
-    vx: random(-2, 2),
-    vy: random(-2, 2),
+    x: width / 2 - 100,
+    y: height / 2 + 150,
+    vx: -8,
+    vy: 0,
     ax: 0,
     ay: 0
   },
   {
     color: [255, 255, 0],
-    radius: 100,
-    x: width / 2 + 160,
-    y: height / 2 - 130,
-    vx: random(-5, 2),
-    vy: random(-2, 5),
+    radius: 60,
+    x: width / 2 + 100,
+    y: height / 2 - 150,
+    vx: 8,
+    vy: 0,
     ax: 0,
     ay: 0
   }
